@@ -3,10 +3,19 @@
 import React, { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 
+interface BeforeInstallPromptEvent extends Event {
+  readonly platforms: string[];
+  readonly userChoice: Promise<{
+    outcome: 'accepted' | 'dismissed';
+    platform: string;
+  }>;
+  prompt(): Promise<void>;
+}
+
 const HomePage = () => {
   const [currentTime, setCurrentTime] = useState<string>("");
   const [timestamps, setTimestamps] = useState<string[]>([]);
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstallable, setIsInstallable] = useState<boolean>(false);
 
   useEffect(() => {
@@ -23,9 +32,9 @@ const HomePage = () => {
       setTimestamps(JSON.parse(savedTimestamps));
     }
 
-    window.addEventListener('beforeinstallprompt', (e) => {
+    window.addEventListener('beforeinstallprompt', (e: Event) => {
       e.preventDefault();
-      setDeferredPrompt(e);
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
       setIsInstallable(true);
     });
 
@@ -205,16 +214,16 @@ const HomePage = () => {
           }}>
             {timestamps.map((time, index) => (
               <li key={index} style={{
-          padding: "8px 0",
-          borderBottom: index < timestamps.length - 1 ? "1px solid #ccc" : "none",
-          color: "#000000"
+                padding: "8px 0",
+                borderBottom: index < timestamps.length - 1 ? "1px solid #ccc" : "none",
+                color: "#000000"
               }}>
-          {time}
+                {time}
               </li>
             ))}
             {timestamps.length === 0 && (
               <li style={{ padding: "8px 0", color: "#000000", fontStyle: "italic" }}>
-          No hay timestamps registrados
+                No hay timestamps registrados
               </li>
             )}
           </ul>
