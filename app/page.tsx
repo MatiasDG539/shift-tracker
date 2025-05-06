@@ -1,11 +1,13 @@
 "use client"
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import * as XLSX from "xlsx";
 
 const HomePage = () => {
   const [currentTime, setCurrentTime] = useState<string>("");
   const [timestamps, setTimestamps] = useState<string[]>([]);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isInstallable, setIsInstallable] = useState<boolean>(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -20,6 +22,22 @@ const HomePage = () => {
     if (savedTimestamps) {
       setTimestamps(JSON.parse(savedTimestamps));
     }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setIsInstallable(true);
+    });
+
+    window.addEventListener('appinstalled', () => {
+      console.log('PWA was installed');
+      setIsInstallable(false);
+    });
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', () => { });
+      window.removeEventListener('appinstalled', () => { });
+    };
   }, []);
 
   const saveTimestamps = (newTimestamps: string[]) => {
@@ -47,8 +65,27 @@ const HomePage = () => {
     setTimestamps([]);
   };
 
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) {
+      console.log('No se puede instalar la aplicación ahora');
+      return;
+    }
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log(`Instalación: ${outcome}`);
+    setDeferredPrompt(null);
+    setIsInstallable(false);
+  };
+
   return (
-    <div style={{ textAlign: "center", marginTop: "20%" }}>
+    <div style={{
+      textAlign: "center",
+      display: "flex",
+      flexDirection: "column",
+      height: "100vh",
+      padding: "20px",
+      boxSizing: "border-box"
+    }}>
       <h1 style={{ fontSize: "4rem", marginBottom: "20px" }}>{currentTime}</h1>
       <div
         style={{
@@ -57,6 +94,7 @@ const HomePage = () => {
           justifyContent: "center",
           gap: "10px",
           flexWrap: "wrap",
+          marginBottom: "20px"
         }}
       >
         <button
@@ -116,14 +154,62 @@ const HomePage = () => {
         >
           Limpiar Timestamps
         </button>
+
+        {isInstallable && (
+          <button
+            onClick={handleInstallClick}
+            style={{
+              padding: "10px 20px",
+              fontSize: "1.2rem",
+              backgroundColor: "#9C27B0",
+              color: "white",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer",
+              transition: "background-color 0.3s",
+              width: "100%",
+              maxWidth: "300px",
+            }}
+            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#7B1FA2")}
+            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#9C27B0")}
+          >
+            Instalar aplicación
+          </button>
+        )}
       </div>
-      <div style={{ marginTop: "20px" }}>
+
+      <div style={{
+        marginTop: "10px",
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden"
+      }}>
         <h2>Timestamps:</h2>
-        <ul>
-          {timestamps.map((time, index) => (
-            <li key={index}>{time}</li>
-          ))}
-        </ul>
+        <div style={{
+          overflowY: "auto",
+          border: "1px solid #ddd",
+          borderRadius: "5px",
+          padding: "10px",
+          flex: 1,
+          backgroundColor: "#f9f9f9"
+        }}>
+          <ul style={{
+            listStyleType: "none",
+            padding: 0,
+            margin: 0,
+            textAlign: "left"
+          }}>
+            {timestamps.map((time, index) => (
+              <li key={index} style={{
+                padding: "8px 0",
+                borderBottom: index < timestamps.length - 1 ? "1px solid #eee" : "none"
+              }}>
+                {time}
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </div>
   );
