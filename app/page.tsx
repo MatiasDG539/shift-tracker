@@ -57,7 +57,7 @@ const HomePage = () => {
     );
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Timestamps");
-    XLSX.writeFile(workbook, "timestamps.xlsx");
+    XLSX.writeFile(workbook, "horas_trabajadas.xlsx");
   };
 
   const handleClearTimestamps = () => {
@@ -191,8 +191,11 @@ const HomePage = () => {
           border: "1px solid #ddd",
           borderRadius: "5px",
           padding: "10px",
-          flex: 1,
-          backgroundColor: "#f9f9f9"
+          maxHeight: "300px",
+          width: "100%",
+          maxWidth: "600px",
+          margin: "0 auto",
+          backgroundColor: "#959791"
         }}>
           <ul style={{
             listStyleType: "none",
@@ -202,12 +205,18 @@ const HomePage = () => {
           }}>
             {timestamps.map((time, index) => (
               <li key={index} style={{
-                padding: "8px 0",
-                borderBottom: index < timestamps.length - 1 ? "1px solid #eee" : "none"
+          padding: "8px 0",
+          borderBottom: index < timestamps.length - 1 ? "1px solid #ccc" : "none",
+          color: "#000000"
               }}>
-                {time}
+          {time}
               </li>
             ))}
+            {timestamps.length === 0 && (
+              <li style={{ padding: "8px 0", color: "#000000", fontStyle: "italic" }}>
+          No hay timestamps registrados
+              </li>
+            )}
           </ul>
         </div>
       </div>
