@@ -16,14 +16,14 @@ const HomePage = () => {
   }, []);
 
   useEffect(() => {
-    const savedTimestamps = sessionStorage.getItem("timestamps");
+    const savedTimestamps = localStorage.getItem("timestamps");
     if (savedTimestamps) {
       setTimestamps(JSON.parse(savedTimestamps));
     }
   }, []);
 
   const saveTimestamps = (newTimestamps: string[]) => {
-    sessionStorage.setItem("timestamps", JSON.stringify(newTimestamps));
+    localStorage.setItem("timestamps", JSON.stringify(newTimestamps));
     setTimestamps(newTimestamps);
   };
 
@@ -43,7 +43,7 @@ const HomePage = () => {
   };
 
   const handleClearTimestamps = () => {
-    sessionStorage.removeItem("timestamps");
+    localStorage.removeItem("timestamps");
     setTimestamps([]);
   };
 
